@@ -5,9 +5,8 @@ data/.runstatus
 data/*.tmp
 .DS_Store
 
-# Never ship the private tree — see _PRIVATE_do_not_ship/README.md.
-# The repo publishes the work and its measurements, never the self or anything
-# identifying Ryan.
+# The private tree is never shipped: it holds the paper draft, the self-run
+# pre-registration, and the agent's own raw answers. See the private README.
 _PRIVATE_do_not_ship/
 
 # Raw run data IS published deliberately — data/*.jsonl is the evidence, and an
