@@ -3,17 +3,42 @@
 **2026-09-28. Two models, 144 calls each, zero errors, zero truncations, 36 cells each,
 no cell below n=4.**
 
+> **⚠ SUPERSEDED IN PART — read this before the section below.** An adversarial review
+> (see `REVIEW_adversarial_spacebunny.md`) identified a defect that invalidates the
+> *interpretation* of what follows while leaving the observations intact:
+> **checkability is not independently manipulated.** It is assigned to whole questions
+> AFTER those questions were chosen, so a difference in SD between a "checkable" item and
+> an "uncheckable" one is a difference between different question contents, scales and
+> response demands — not an identified effect of checkability. A between-item difference
+> cannot isolate an item property. **So the sentence "stability tracks checkability, not
+> obviousness" is not supported and is withdrawn.** What survives, uninterpreted, is the
+> descriptive table below. The correct statement is the weaker one: *in these runs,
+> the items with externally checkable answers returned the same value more often than the
+> other items did; that pattern is confounded with item identity and is not evidence for a
+> mechanism.* Testing checkability properly requires crossing the property *within* items
+> (the same question in a checkable and a non-checkable form), which this instrument does
+> not yet do.
+
 ## Headline, and it is a self-falsification
 
-**v1's central claim is dead.** v1 reported that response instability tracked the *absence
-of a checkable answer*. v2 was built specifically to test that with a properly controlled
-2×2, and the claim does not hold. The v1 result was an artifact of an instrument with one
-checkable item that was also trivially easy, and no control for "unanswerable but
-well-behaved."
+**v1's central claim does not survive.** v1 reported that response instability tracked the
+*absence of a checkable answer*. v2 was built to test that, and the test fails — but not in
+the clean way first claimed here. Two separate things went wrong, and they are worth
+keeping apart:
 
-This is reported first, not buried, because it is the most useful thing here: a two-item
-"control set" produced a confident, publishable, wrong mechanism, and a four-cell design
-killed it in 288 calls.
+1. **The v1 item set was confounded** (one checkable item, also trivially easy, no control
+   for "unanswerable but well-behaved") — so v1's result was never trustworthy.
+2. **The v2 replacement did not fix the problem it was built to fix.** It added items with
+   the right labels but never *manipulated* checkability within a question, so the
+   comparison is between different questions and cannot isolate the property. **A relabeled
+   confound is still a confound.**
+
+What this is actually a case of: a two-item "control set" produced a confident, wrong
+mechanism; a replacement design with better labels produced a second, differently-wrong
+reading of the same data; and an adversarial review of the artifact — not the author —
+caught it. **The lesson is not "controls are good." It is that adding items which differ in
+the property you care about is not the same as manipulating that property, and only the
+second licenses a mechanism claim.**
 
 ## The 2×2, both models (mean ± SD, all framings pooled, n = 16 per item)
 

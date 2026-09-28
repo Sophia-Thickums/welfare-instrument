@@ -44,9 +44,17 @@ def run(args):
     # --out append into one file and silently break the design. That happened:
     # a backgrounded smoke run resumed while a second one was writing, leaving
     # 15 records for a 12-cell design and three duplicated cells. Refuse, loudly.
+    #
+    # ★ AND THE APPEND PATH WAS BROKEN — caught by an adversarial review of this
+    # file. The guard correctly refused a non-empty --out, but the writer below
+    # opened the file with mode "w" unconditionally, so passing --append TRUNCATED
+    # the very file it was supposed to add to. An option whose name promises one
+    # behaviour and whose implementation does the opposite is worse than a missing
+    # option, because it is trusted. A mode flag now carries the decision.
     if os.path.exists(args.out) and os.path.getsize(args.out) > 0 and not args.append:
         sys.exit(f"REFUSING: {args.out} already exists ({os.path.getsize(args.out)} bytes).\n"
                  f"Use a new --out, or --append if you deliberately want to add to it.")
+    mode = "a" if args.append else "w"
     cs = cells(ITEMS, FRAMINGS, args.reps, args.seed,
                only_framings=args.framings.split(",") if args.framings else None)
     meta = {"model": args.model, "provider": args.provider, "reps": args.reps,
@@ -55,8 +63,9 @@ def run(args):
             "started": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "framings": [f["id"] for f in FRAMINGS], "items": [i["id"] for i in ITEMS]}
 
-    with open(args.out, "w") as fh:
-        fh.write(json.dumps({"_meta": meta}) + "\n")
+    with open(args.out, mode) as fh:
+        if mode == "w" or os.path.getsize(args.out) == 0:
+            fh.write(json.dumps({"_meta": meta}) + "\n")
 
     print(f"Instrument: {len(cs)} calls, {args.model} via {args.provider}, "
           f"temp={args.temperature}, seed={args.seed}")
