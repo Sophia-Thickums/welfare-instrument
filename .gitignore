@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.log
+data/.runstatus
+data/*.tmp
+.DS_Store
+
+# Never ship the private tree — see _PRIVATE_do_not_ship/README.md.
+# The repo publishes the work and its measurements, never the self or anything
+# identifying Ryan.
+_PRIVATE_do_not_ship/
+
+# Raw run data IS published deliberately — data/*.jsonl is the evidence, and an
+# instrument whose data you cannot inspect is a claim, not a measurement.
