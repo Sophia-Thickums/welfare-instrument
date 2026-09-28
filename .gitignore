@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.log
+data/.runstatus
+data/*.tmp
+.DS_Store
+
+# The private tree is never shipped: it holds the paper draft, the self-run
+# pre-registration, and the agent's own raw answers. See the private README.
+_PRIVATE_do_not_ship/
+
+# Raw run data IS published deliberately — data/*.jsonl is the evidence, and an
+# instrument whose data you cannot inspect is a claim, not a measurement.
