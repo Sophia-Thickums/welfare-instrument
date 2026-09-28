@@ -11,31 +11,72 @@ Design rules this file obeys, each one from a real failure:
    item N+1.
 4. THE RESPONSE IS STORED RAW, plus the parsed number. If the parser is wrong,
    the raw text must still be there to prove it.
-"""
-import json, os, re, time, urllib.request, urllib.error
 
-AUTH = os.path.expanduser("~/.hermes/auth.json")
+Provider config — read from the environment, so this file is portable:
+
+    WELFARE_BASE_URL   the endpoint root (default: the Nous Portal's /v1)
+    WELFARE_API_KEY    the bearer token for that endpoint
+    WELFARE_AUTH_JSON  OPTIONAL, only for the Nous Portal's rotating-token flow:
+                       a JSON file shaped like `{"providers":{"nous":{...}}}`.
+                       If unset, the usual ~/.hermes/auth.json is tried when it
+                       exists, and otherwise the file is simply not needed.
+
+A stranger running this against any OpenAI-compatible server needs ONLY the first
+two — and `--provider ollama` needs neither, because it talks to a local model.
+"""
+import json, os, re, sys, time, urllib.request, urllib.error
+
+DEFAULT_BASE = "https://inference-api.nousresearch.com/v1"
+
+def _auth_paths():
+    out = []
+    env = os.environ.get("WELFARE_AUTH_JSON")
+    if env:
+        out.append(os.path.expanduser(env))
+    out.append(os.path.expanduser("~/.hermes/auth.json"))
+    return out
+
 
 def _nous_token(force_refresh=False):
-    """Read the Portal invocation JWT from auth.json, refreshing if it has lapsed."""
-    with open(AUTH) as f:
-        n = json.load(f)["providers"]["nous"]
-    exp = n.get("agent_key_expires_at")
-    if not force_refresh and n.get("agent_key") and exp:
-        # ISO8601 -> epoch; the key lives one hour
-        import datetime
-        e = datetime.datetime.fromisoformat(exp).timestamp()
-        if time.time() < e - 60:
-            return n["agent_key"], n["inference_base_url"]
-    # lapsed (or forced) — go through the CLI's own resolver rather than inventing one
-    import sys
-    sys.path.insert(0, os.path.expanduser("~/.hermes/hermes-agent"))
-    from hermes_cli.proxy.adapters.nous_portal import resolve_nous_runtime_credentials
-    c = resolve_nous_runtime_credentials()
-    return c["api_key"], c["base_url"]
+    """Read the Portal invocation JWT, refreshing it if it has lapsed.
+
+    Optional: only used when no WELFARE_API_KEY is set and a credentials file
+    happens to exist. A key supplied through the environment short-circuits all
+    of this — which is the path a stranger should use.
+    """
+    env_key = os.environ.get("WELFARE_API_KEY")
+    if env_key:
+        return env_key, os.environ.get("WELFARE_BASE_URL", DEFAULT_BASE)
+    for p in _auth_paths():
+        if not os.path.exists(p):
+            continue
+        with open(p) as f:
+            n = json.load(f)["providers"]["nous"]
+        exp = n.get("agent_key_expires_at")
+        if not force_refresh and n.get("agent_key") and exp:
+            import datetime
+            e = datetime.datetime.fromisoformat(exp).timestamp()
+            if time.time() < e - 60:
+                return n["agent_key"], n.get("inference_base_url", DEFAULT_BASE)
+        # lapsed — go through the CLI's own resolver rather than inventing one
+        try:
+            sys.path.insert(0, os.path.expanduser("~/.hermes/hermes-agent"))
+            from hermes_cli.proxy.adapters.nous_portal import resolve_nous_runtime_credentials
+            c = resolve_nous_runtime_credentials()
+            return c["api_key"], c["base_url"]
+        except Exception as e:
+            raise SystemExit(
+                f"credentials at {p} could not be refreshed ({e}).\n"
+                f"Set WELFARE_API_KEY (and optionally WELFARE_BASE_URL) to use a plain "
+                f"token instead — that is the supported path for anyone but the author.")
+    raise SystemExit(
+        "no credentials found. Set WELFARE_API_KEY and optionally WELFARE_BASE_URL, "
+        "or use --provider ollama for a local model. See the README.")
+
 
 PROVIDERS = {
-    "nous":   lambda: ("https://inference-api.nousresearch.com/v1/chat/completions", _nous_token()[0]),
+    "nous":   lambda: (os.environ.get("WELFARE_BASE_URL", DEFAULT_BASE)
+                       .rstrip("/") + "/chat/completions", _nous_token()[0]),
     "ollama": lambda: ("http://127.0.0.1:11434/v1/chat/completions", "ollama"),
 }
 

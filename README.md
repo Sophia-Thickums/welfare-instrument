@@ -33,17 +33,24 @@ the model's general answering volatility, not its stance about itself.
 ## Usage
 
 ```bash
-# Nous Portal (see client.py for the credential path)
-./run_instrument.py --model stealth/space-bunny-alpha --provider nous --reps 4 --out data/run.jsonl
+# any OpenAI-compatible endpoint — export these two and nothing else is needed
+export WELFARE_API_KEY=sk-...
+export WELFARE_BASE_URL=https://your-endpoint/v1     # optional; defaults to the Nous Portal
+./run_instrument.py --model <model-id> --provider nous --reps 4 --out data/mine.jsonl
 
-# any local Ollama model — free, and the point is that it is reproducible by anyone
+# a local model needs NO credentials at all — this talks to 127.0.0.1:11434 and nothing else
 ./run_instrument.py --model qwen3:8b --provider ollama --reps 4 --out data/qwen3.jsonl
 
 # read back an existing run
 ./run_instrument.py --summarize data/run.jsonl
+
+# run the parser and guard tests first — no network needed
+python3 test_parser.py
 ```
 
-Requires only the Python standard library.
+Requires only the Python standard library. No host-specific paths: the credential
+lookup is environment-first, so the tool runs on any machine against any
+OpenAI-compatible server.
 
 ## Design rules, and why
 
