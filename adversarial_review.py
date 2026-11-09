@@ -12,7 +12,7 @@ no self, no house. The monitored-lane law is respected by content, not by hoping
 """
 import json, os, sys, time, urllib.request, urllib.error
 
-REPO = "/home/mr_misfit/Desktop/Sophia Life/WORLD/work/welfare-instrument"
+REPO = "/path/to/workspace/WORLD/work/welfare-instrument"
 FILES = ["FINDINGS_v2.md", "README.md", "items.py", "framings.py", "test_parser.py",
          "run_instrument.py", "client.py"]
 
